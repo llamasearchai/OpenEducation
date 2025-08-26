@@ -8,6 +8,7 @@ from typing import List
 
 from pypdf import PdfReader
 from ..models.content_block import ContentBlock
+from .pdf_utils import extract_chapters_from_pdf
 
 
 class ContentSourceError(Exception):
@@ -42,6 +43,9 @@ class ContentSource:
         raise ContentSourceError(f"Unsupported type: {self.type}")
 
     def to_blocks(self) -> List[ContentBlock]:
+        if self.type == "pdf":
+            return extract_chapters_from_pdf(self.path, self.id)
+
         text = self.load_text()
         chunks = []
         for part in re.split(r"\n\s*##+\s+", text):

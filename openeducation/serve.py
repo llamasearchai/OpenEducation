@@ -1,9 +1,17 @@
 from __future__ import annotations
 import os
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from .utils.io import read_json
+from .dashboard.routes import router as dashboard_router
 
-app = FastAPI(title="OpenEducation Preview API")
+app = FastAPI(title="OpenEducation API")
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="openeducation/dashboard/static"), name="static")
+
+# Include routers
+app.include_router(dashboard_router, tags=["Dashboard"])
 
 
 @app.get("/health")

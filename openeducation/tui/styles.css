@@ -1,0 +1,37 @@
+/* General App Styles */
+Screen {
+    layout: vertical;
+}
+
+/* Header and Footer Styles */
+Header {
+    dock: top;
+    height: 3;
+    background: $primary;
+    color: $text;
+}
+
+Footer {
+    dock: bottom;
+    height: 1;
+    background: $primary-darken-2;
+    color: $text;
+}
+
+/* Tab Styles */
+Tabs {
+    dock: top;
+}
+
+Tab {
+    padding: 1 2;
+}
+
+/* Content Area */
+ContentSwitcher {
+    padding: 1;
+}
+
+Container {
+    padding: 1;
+}

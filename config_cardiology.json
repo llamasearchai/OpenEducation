@@ -1,0 +1,10 @@
+{
+  "sources": [
+    {
+      "id": "pediatric_cardiology",
+      "type": "pdf",
+      "path": "PediatricCardiology.pdf",
+      "tags": ["medicine", "cardiology", "pediatrics"]
+    }
+  ]
+}

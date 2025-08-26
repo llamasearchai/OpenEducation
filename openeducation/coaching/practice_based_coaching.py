@@ -7,6 +7,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from ..utils.io import write_json, read_json
+from ..observations.observation_tools import ObservationToolsManager
+from ..rag.embeddings import OpenAIEmbedding
+from ..llm.openai_wrapper import OpenAIWrapper
+import numpy as np
 
 
 @dataclass
@@ -75,6 +79,81 @@ class PracticeBasedCoachingManager:
     def __init__(self, data_dir: str = "data/coaching"):
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
+        self.observation_manager = ObservationToolsManager()
+        self.embedding_model = OpenAIEmbedding()
+        self.llm = OpenAIWrapper()
+
+    def analyze_observation_notes(self, notes: str, top_k: int = 3) -> Dict[str, Any]:
+        """Analyze unstructured observation notes using AI."""
+        # 1. Embed the observation notes
+        notes_embedding = self.embedding_model.embed([notes])[0]
+
+        # 2. Find the most relevant criteria via semantic search
+        criteria_embeddings = self.observation_manager.criteria_embeddings
+        
+        # Ensure there are criteria to compare against
+        if not criteria_embeddings:
+            return {"error": "No observation criteria embeddings found. Please initialize the ObservationToolsManager correctly."}
+
+        similarities = self._cosine_similarity(notes_embedding, list(criteria_embeddings.values()))
+        top_indices = np.argsort(similarities)[-top_k:][::-1]
+        
+        matched_criteria_ids = [list(criteria_embeddings.keys())[i] for i in top_indices]
+        
+        all_criteria = {c.id: c for cat in self.observation_manager.observation_criteria.values() for c in cat}
+        matched_criteria = [all_criteria[cid] for cid in matched_criteria_ids]
+
+        # 3. Use LLM to generate a structured analysis
+        prompt = self._build_analysis_prompt(notes, matched_criteria)
+        analysis_text = self.llm.get_response(prompt)
+        
+        try:
+            analysis_json = json.loads(analysis_text)
+        except json.JSONDecodeError:
+            analysis_json = {"error": "Failed to parse LLM response.", "raw_response": analysis_text}
+
+        return analysis_json
+
+    def _build_analysis_prompt(self, notes: str, criteria: List[Any]) -> str:
+        """Build the LLM prompt for analyzing observation notes."""
+        criteria_text = "\n\n".join(
+            [f"- **{c.name}** (Category: {c.category}): {c.description}" for c in criteria]
+        )
+        prompt = f"""
+        Analyze the following unstructured classroom observation notes.
+        Based on the notes, identify strengths, areas for growth, and suggest concrete next steps for a coaching cycle.
+        The analysis should be guided by the most relevant observation criteria provided below.
+
+        **Observation Notes:**
+        "{notes}"
+
+        **Relevant Observation Criteria:**
+        {criteria_text}
+
+        **Output Format:**
+        Provide the output as a single JSON object with the following keys:
+        - "summary": A brief, one-paragraph summary of the observation.
+        - "strengths": A list of observed strengths, directly referencing the notes and criteria.
+        - "areas_for_growth": A list of areas for professional growth, referencing the notes and criteria.
+        - "suggested_next_steps": A list of actionable next steps for the teacher and coach.
+        
+        Ensure the output is only the JSON object, with no other text.
+        """
+        return prompt
+
+    def _cosine_similarity(self, query_vec: np.ndarray, doc_vecs: List[np.ndarray]) -> np.ndarray:
+        """Calculate cosine similarity between a query vector and a list of document vectors."""
+        query_vec = np.array(query_vec)
+        doc_vecs = np.array(doc_vecs)
+        
+        query_norm = np.linalg.norm(query_vec)
+        doc_norms = np.linalg.norm(doc_vecs, axis=1)
+        
+        # Handle zero vectors to avoid division by zero
+        if query_norm == 0 or np.any(doc_norms == 0):
+            return np.zeros(len(doc_vecs))
+            
+        return np.dot(doc_vecs, query_vec) / (doc_norms * query_norm)
 
     def create_coaching_cycle(self, teacher_id: str, coach_id: str, focus_area: str,
                              current_level: str, goal_level: str, duration_weeks: int = 8) -> CoachingCycle:

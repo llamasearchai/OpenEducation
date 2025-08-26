@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openeducation"
-version = "0.1.0"
+version = "1.0.1"
 description = "OpenEducation: ingest educational content and export Anki decks with RAG + Agents SDK."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -15,5 +15,52 @@ classifiers = [
 "Operating System :: MacOS",
 ]
 
+[project.optional-dependencies]
+dev = [
+  "ruff>=0.6.1",
+  "mypy>=1.10.0",
+  "pytest>=8.3.2",
+  "pytest-cov>=5.0.0",
+  "tox>=4.15.0",
+  "hatch>=1.9.0",
+]
+
+[project.scripts]
+openeducation = "openeducation.cli:app"
+
 [tool.setuptools.packages.find]
 where = ["openeducation"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unused_configs = true
+no_implicit_optional = false
+strict_optional = false
+exclude = [
+  "data/",
+  "build/",
+  "dist/",
+  ".venv/",
+]
+
+[tool.hatch.envs.default]
+dependencies = [
+  "-r requirements.txt",
+  "ruff",
+  "mypy",
+  "pytest",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest -q"
+lint = "ruff check ."
+types = "mypy ."

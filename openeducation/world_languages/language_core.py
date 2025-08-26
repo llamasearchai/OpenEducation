@@ -70,7 +70,7 @@ class LanguageCurriculum:
     technology_integration: List[str] = field(default_factory=list)
     assessment_methods: List[str] = field(default_factory=list)
     differentiation_strategies: List[str] = field(default_factory=list)
-    created_by: str = ""
+    created_by: str = "curriculum_system"
     created_date: str = ""
     alignment_standards: List[str] = field(default_factory=list)  # ACTFL, NGSS, CCSS, etc.
 

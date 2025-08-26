@@ -74,6 +74,11 @@ logs/
 .coverage
 .pytest_cache/
 .tox/
+.ruff_cache/
+.hatch/
+.uv/
+uv.lock
+uv.lock.*
 .cache
 nosetests.xml
 coverage.xml

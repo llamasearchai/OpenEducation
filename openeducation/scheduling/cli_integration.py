@@ -5,9 +5,41 @@ from pathlib import Path
 from typing import Optional
 
 import typer
-from .progress_tracker import ProgressTracker, StudySession, LearningProgress
+from .progress_tracker import ProgressTracker, StudySession, LearningProgress, AnkiPerformance
 
 app = typer.Typer(help="Learning progress tracking and study management")
+
+
+@app.command()
+def import_anki_reviews(
+    syllabus_id: str = typer.Option(..., help="ID of the syllabus to associate with"),
+    student_id: str = typer.Option(..., help="Unique student identifier"),
+    reviews_file: str = typer.Argument(..., help="Path to JSON file with Anki review data"),
+    data_dir: str = typer.Option("data/progress", help="Directory to store progress data")
+) -> None:
+    """Import Anki review data from a JSON file."""
+    try:
+        tracker = ProgressTracker(data_dir)
+        
+        with open(reviews_file, 'r', encoding='utf-8') as f:
+            reviews_data = json.load(f)
+
+        anki_reviews = [AnkiPerformance(**review) for review in reviews_data]
+        
+        tracker.import_anki_reviews(syllabus_id, student_id, anki_reviews)
+        
+        print(f"✅ Successfully imported {len(anki_reviews)} Anki reviews for syllabus '{syllabus_id}'.")
+        print(f"   Student ID: {student_id}")
+
+    except FileNotFoundError:
+        print(f"❌ Error: The file '{reviews_file}' was not found.")
+        raise typer.Exit(1)
+    except json.JSONDecodeError:
+        print(f"❌ Error: Could not decode JSON from '{reviews_file}'. Please ensure it's a valid JSON file.")
+        raise typer.Exit(1)
+    except Exception as e:
+        print(f"❌ An unexpected error occurred: {e}")
+        raise typer.Exit(1)
 
 
 @app.command()
@@ -133,6 +165,45 @@ def get_report(
 
     except Exception as e:
         print(f"❌ Error getting report: {e}")
+        raise typer.Exit(1)
+
+
+@app.command()
+def get_performance_report(
+    syllabus_id: str = typer.Option(..., help="ID of the syllabus"),
+    student_id: str = typer.Option(..., help="Student identifier"),
+    data_dir: str = typer.Option("data/progress", help="Progress data directory")
+) -> None:
+    """Generate a performance report with weak/strong topics."""
+    try:
+        tracker = ProgressTracker(data_dir)
+        report = tracker.generate_performance_report(syllabus_id, student_id)
+
+        print(f"🚀 Performance Report for {report.student_id} on Syllabus '{report.syllabus_id}'")
+        print(f"   Report Date: {report.report_date}")
+        print("=" * 60)
+        
+        print(f"\n📈 Overall Completion Rate: {report.overall_completion_rate}%")
+        
+        if report.weak_topics:
+            print("\n⚠️  Topics to Focus On:")
+            for topic, score in report.weak_topics.items():
+                print(f"   - {topic} (Performance Score: {score:.2f})")
+        
+        if report.strong_topics:
+            print("\n✅ Strong Topics:")
+            for topic, score in report.strong_topics.items():
+                print(f"   - {topic} (Performance Score: {score:.2f})")
+
+        if not report.weak_topics and not report.strong_topics:
+             print("\n📊 No specific weak or strong topics identified. Keep up the consistent work!")
+
+        print("\n📝 Detailed Feedback:")
+        for line in report.detailed_feedback:
+            print(f"   - {line}")
+
+    except Exception as e:
+        print(f"❌ Error generating performance report: {e}")
         raise typer.Exit(1)
 
 

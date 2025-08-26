@@ -4,6 +4,13 @@ import hashlib
 import json
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional
+import uuid
+from enum import Enum
+
+
+class CardType(Enum):
+    BASIC = "basic"
+    CLOZE = "cloze"
 
 
 def _id(seed: str) -> str:
@@ -15,7 +22,7 @@ class Card:
     id: str
     front: str
     back: str
-    type: str = "basic"
+    card_type: CardType = CardType.BASIC
     cloze_text: Optional[str] = None
     media: List[str] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)
@@ -43,8 +50,24 @@ class Card:
             tags=tags or [],
         )
 
+    @classmethod
+    def cloze(
+        cls, text: str, extra: str, deck_id: str, source_id: str, tags: List[str] = []
+    ) -> Card:
+        id = uuid.uuid4().hex
+        return Card(id=id, deck_id=deck_id, front=text, back=extra, card_type=CardType.CLOZE, tags=tags, source_id=source_id)
+
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        return {
+            "id": self.id,
+            "deck_id": self.deck_id,
+            "front": self.front,
+            "back": self.back,
+            "card_type": self.card_type.value,
+            "tags": self.tags,
+            "media": self.media,
+            "source_id": self.source_id,
+        }
 
     def to_json(self) -> str:
         return json.dumps(self.to_dict(), ensure_ascii=False, indent=2)

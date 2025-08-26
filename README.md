@@ -226,6 +226,68 @@ pytest tests/test_world_languages.py -v
 pytest --cov=openeducation --cov-report=html
 ```
 
+## Developer Setup
+
+You can use any of the following workflows to set up a local dev environment.
+
+### Using uv (fast Python manager)
+
+```bash
+# Create a virtual environment and install
+uv venv
+uv pip install -r requirements.txt
+uv pip install ruff mypy tox hatch
+
+# Lint, type-check, test
+uv run ruff check .
+uv run mypy .
+uv run pytest -q
+```
+
+### Using Hatch
+
+```bash
+# Install hatch and create the default env
+pip install hatch
+hatch env create
+
+# Run tasks
+hatch run lint
+hatch run types
+hatch run test
+```
+
+### Using Tox
+
+```bash
+tox -q            # run tests on py311
+tox -q -e lint    # ruff lint
+tox -q -e types   # mypy type-check
+```
+
+### Using Make
+
+```bash
+make venv
+make install
+make lint
+make types
+make test
+```
+
+## CLI Entrypoint
+
+After installing the package (editable or regular install), the `openeducation` command is available:
+
+```bash
+# Examples
+openeducation version
+openeducation ingest examples/config_examples/config.json --out-dir data/runs/latest
+openeducation index data/runs/latest/content_blocks.json
+openeducation generate data/runs/latest/content_blocks.json --deck-id deck_neuro --max-cards 10
+openeducation export data/runs/latest/cards.json --deck-id deck_neuro --name TestDeck
+```
+
 ## API Documentation
 
 ### Core Endpoints

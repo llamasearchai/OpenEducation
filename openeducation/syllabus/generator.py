@@ -8,6 +8,8 @@ from pathlib import Path
 
 from ..models.card import Card
 from ..utils.io import write_json, read_json
+from ..llm.openai_wrapper import OpenAIWrapper
+from ..scheduling.progress_tracker import PerformanceReport
 
 
 @dataclass
@@ -58,8 +60,9 @@ class Syllabus:
 class SyllabusGenerator:
     """Generate comprehensive syllabi for various educational subjects."""
 
-    def __init__(self):
+    def __init__(self, use_llm: bool = True):
         self.subject_templates = self._load_subject_templates()
+        self.llm = OpenAIWrapper() if use_llm else None
 
     def _load_subject_templates(self) -> Dict[str, Dict]:
         """Load predefined templates for each subject area."""
@@ -76,14 +79,29 @@ class SyllabusGenerator:
             "health_fitness": self._get_health_template()
         }
 
-    def generate_syllabus(self, subject: str, grade_level: str = "9-12",
-                         duration_weeks: int = 36, instructor: str = "Teacher") -> Syllabus:
+    def generate_syllabus(
+        self,
+        subject: str,
+        grade_level: str = "9-12",
+        duration_weeks: int = 36,
+        instructor: str = "Teacher",
+        performance_report: Optional[PerformanceReport] = None
+    ) -> Syllabus:
         """Generate a complete syllabus for the specified subject."""
         if subject not in self.subject_templates:
             raise ValueError(f"Subject '{subject}' not supported. Available: {list(self.subject_templates.keys())}")
 
         template = self.subject_templates[subject]
 
+        if self.llm:
+            # Use LLM for dynamic, adaptive syllabus generation
+            return self._generate_syllabus_with_llm(template, subject, grade_level, duration_weeks, instructor, performance_report)
+        else:
+            # Fallback to template-based generation
+            return self._generate_syllabus_from_template(template, subject, grade_level, duration_weeks, instructor)
+
+    def _generate_syllabus_from_template(self, template: Dict, subject: str, grade_level: str, duration_weeks: int, instructor: str) -> Syllabus:
+        """Generate a syllabus using the static template."""
         syllabus = Syllabus(
             id=f"syllabus_{subject}_{grade_level.replace('-', '_')}",
             subject=subject,
@@ -98,56 +116,93 @@ class SyllabusGenerator:
             prerequisites=template["prerequisites"],
             learning_outcomes=template["learning_outcomes"]
         )
-
-        # Generate units based on template
         syllabus.units = self._generate_units(template, duration_weeks)
-
         return syllabus
 
-    def _generate_units(self, template: Dict, total_weeks: int) -> List[SyllabusUnit]:
-        """Generate syllabus units based on template and duration."""
-        units = []
-        unit_templates = template["units"]
-        weeks_per_unit = max(1, total_weeks // len(unit_templates))
+    def _generate_syllabus_with_llm(
+        self,
+        template: Dict,
+        subject: str,
+        grade_level: str,
+        duration_weeks: int,
+        instructor: str,
+        performance_report: Optional[PerformanceReport]
+    ) -> Syllabus:
+        """Generate an adaptive syllabus using an LLM."""
+        prompt = self._build_adaptive_prompt(template, duration_weeks, performance_report)
+        
+        response_text = self.llm.get_response(prompt)
+        syllabus_json = json.loads(response_text)
 
-        for i, unit_template in enumerate(unit_templates):
+        # Create Syllabus object from LLM response
+        syllabus = Syllabus(
+            id=f"syllabus_{subject}_{grade_level.replace('-', '_')}_adaptive",
+            subject=subject,
+            grade_level=grade_level,
+            title=syllabus_json.get("title", template["title"]),
+            description=syllabus_json.get("description", template["description"]),
+            duration_weeks=duration_weeks,
+            instructor=instructor,
+            standards=syllabus_json.get("standards", template["standards"]),
+            materials=syllabus_json.get("materials", template["materials"]),
+            grading_policy=syllabus_json.get("grading_policy", template["grading_policy"]),
+            prerequisites=syllabus_json.get("prerequisites", template["prerequisites"]),
+            learning_outcomes=syllabus_json.get("learning_outcomes", template["learning_outcomes"])
+        )
+
+        for unit_data in syllabus_json.get("units", []):
             unit = SyllabusUnit(
-                id=f"unit_{i+1}",
-                title=unit_template["title"],
-                description=unit_template["description"],
-                duration_weeks=weeks_per_unit,
-                assessment_methods=unit_template["assessment_methods"],
-                resources=unit_template["resources"],
-                projects=unit_template["projects"]
+                id=unit_data["id"],
+                title=unit_data["title"],
+                description=unit_data["description"],
+                duration_weeks=unit_data["duration_weeks"],
+                assessment_methods=unit_data["assessment_methods"],
+                resources=unit_data.get("resources", []),
+                projects=unit_data.get("projects", [])
             )
+            for obj_data in unit_data.get("objectives", []):
+                unit.objectives.append(LearningObjective(**obj_data))
+            syllabus.units.append(unit)
+            
+        return syllabus
 
-            # Generate learning objectives for this unit
-            unit.objectives = self._generate_objectives(unit_template, unit.id)
+    def _build_adaptive_prompt(self, template: Dict, duration_weeks: int, performance_report: Optional[PerformanceReport]) -> str:
+        """Build the LLM prompt for adaptive syllabus generation."""
+        prompt = f"""
+        Generate a comprehensive {duration_weeks}-week syllabus based on the following template.
+        The output must be a valid JSON object following the structure of the template.
 
-            units.append(unit)
+        **Base Template:**
+        {json.dumps(template, indent=2)}
 
-        return units
+        **Adaptation Instructions:**
+        """
 
-    def _generate_objectives(self, unit_template: Dict, unit_id: str) -> List[LearningObjective]:
-        """Generate learning objectives for a unit."""
-        objectives = []
-        obj_templates = unit_template.get("objectives", [])
+        if performance_report:
+            prompt += f"""
+            This syllabus must be adapted for a student with the following performance profile:
+            - Student ID: {performance_report.student_id}
+            - Overall Completion Rate: {performance_report.overall_completion_rate}%
+            
+            **Weak Topics (Prioritize and allocate more time to these):**
+            {json.dumps(performance_report.weak_topics, indent=2)}
 
-        for i, obj_template in enumerate(obj_templates):
-            objective = LearningObjective(
-                id=f"{unit_id}_obj_{i+1}",
-                title=obj_template["title"],
-                description=obj_template["description"],
-                standard=obj_template["standard"],
-                difficulty=obj_template.get("difficulty", "medium"),
-                estimated_time=obj_template.get("estimated_time", 30),
-                prerequisites=obj_template.get("prerequisites", []),
-                assessment_criteria=obj_template.get("assessment_criteria", []),
-                resources=obj_template.get("resources", [])
-            )
-            objectives.append(objective)
+            **Strong Topics (Review briefly, but do not over-emphasize):**
+            {json.dumps(performance_report.strong_topics, indent=2)}
 
-        return objectives
+            **Instructions:**
+            1.  Adjust the 'duration_weeks' for each unit in the syllabus. Allocate more time to units covering the weak topics.
+            2.  Add specific 'LearningObjective's within relevant units that directly target the weak topics. These should be designed for reinforcement.
+            3.  Ensure the total duration of all units sums to {duration_weeks}.
+            4.  The final output must be only the JSON object of the complete syllabus, with no other text.
+            """
+        else:
+            prompt += """
+            Generate a standard syllabus without any specific adaptations.
+            The final output must be only the JSON object of the complete syllabus, with no other text.
+            """
+        
+        return prompt
 
     def generate_anki_deck_from_syllabus(self, syllabus: Syllabus, output_dir: str = "data/decks") -> str:
         """Generate Anki decks from syllabus content."""
@@ -227,6 +282,92 @@ class SyllabusGenerator:
 
         schedule["end_date"] = current_date.isoformat()
         return schedule
+
+    def _generate_units(self, template: Dict, total_weeks: int, performance_report: Optional[PerformanceReport] = None) -> List[SyllabusUnit]:
+        """Generate syllabus units based on template and duration."""
+        units = []
+        unit_templates = template["units"]
+        
+        # Adjust week distribution based on performance
+        week_distribution = self._get_week_distribution(len(unit_templates), total_weeks, unit_templates, performance_report)
+
+        for i, unit_template in enumerate(unit_templates):
+            unit = SyllabusUnit(
+                id=f"unit_{i+1}",
+                title=unit_template["title"],
+                description=unit_template["description"],
+                duration_weeks=week_distribution[i],
+                assessment_methods=unit_template["assessment_methods"],
+                resources=unit_template["resources"],
+                projects=unit_template["projects"]
+            )
+
+            # Generate learning objectives for this unit
+            unit.objectives = self._generate_objectives(unit_template, unit.id)
+
+            units.append(unit)
+
+        return units
+
+    def _get_week_distribution(self, num_units: int, total_weeks: int, unit_templates: List[Dict], report: Optional[PerformanceReport]) -> List[int]:
+        """Calculate week distribution, allocating more time to weak areas."""
+        base_weeks = total_weeks / num_units
+        distribution = [base_weeks] * num_units
+        
+        if report and report.weak_topics:
+            weak_unit_indices = []
+            for i, unit in enumerate(unit_templates):
+                # Simple check if any objective title matches a weak topic substring
+                if any(weak_topic in obj['title'].lower() for obj in unit.get('objectives', []) for weak_topic in report.weak_topics.keys()):
+                     weak_unit_indices.append(i)
+
+            if weak_unit_indices:
+                extra_time_per_unit = base_weeks * 0.5  # Add 50% more time to weak units
+                time_to_reallocate = extra_time_per_unit * len(weak_unit_indices)
+
+                # Add time to weak units
+                for i in weak_unit_indices:
+                    distribution[i] += extra_time_per_unit
+                
+                # Remove time from non-weak units
+                non_weak_units = [i for i in range(num_units) if i not in weak_unit_indices]
+                if non_weak_units:
+                    reduction_per_unit = time_to_reallocate / len(non_weak_units)
+                    for i in non_weak_units:
+                        distribution[i] = max(1, distribution[i] - reduction_per_unit) # Ensure at least 1 week
+
+        # Normalize to ensure total weeks match the duration
+        current_total = sum(distribution)
+        factor = total_weeks / current_total
+        final_distribution = [round(d * factor) for d in distribution]
+
+        # Adjust for rounding errors
+        diff = total_weeks - sum(final_distribution)
+        if diff != 0:
+            final_distribution[0] += diff # Add remainder to the first unit
+
+        return [int(d) for d in final_distribution]
+
+    def _generate_objectives(self, unit_template: Dict, unit_id: str) -> List[LearningObjective]:
+        """Generate learning objectives for a unit."""
+        objectives = []
+        obj_templates = unit_template.get("objectives", [])
+
+        for i, obj_template in enumerate(obj_templates):
+            objective = LearningObjective(
+                id=f"{unit_id}_obj_{i+1}",
+                title=obj_template["title"],
+                description=obj_template["description"],
+                standard=obj_template["standard"],
+                difficulty=obj_template.get("difficulty", "medium"),
+                estimated_time=obj_template.get("estimated_time", 30),
+                prerequisites=obj_template.get("prerequisites", []),
+                assessment_criteria=obj_template.get("assessment_criteria", []),
+                resources=obj_template.get("resources", [])
+            )
+            objectives.append(objective)
+
+        return objectives
 
     # Subject-specific templates
     def _get_science_template(self) -> Dict[str, Any]:

@@ -10,6 +10,17 @@ from ..utils.io import write_json, read_json
 
 
 @dataclass
+class AnkiPerformance:
+    """Detailed performance metrics for a single Anki card review."""
+    card_id: str
+    deck_name: str
+    lapses: int
+    ease_factor: float
+    review_date: str
+    review_history: List[Dict[str, Any]] = field(default_factory=list)
+
+
+@dataclass
 class StudySession:
     """A single study session with objectives and progress."""
     id: str
@@ -25,6 +36,19 @@ class StudySession:
     resources_used: List[str] = field(default_factory=list)
     difficulty_rating: Optional[int] = None  # 1-5 scale
     understanding_level: Optional[int] = None  # 1-5 scale
+    anki_performance: List[AnkiPerformance] = field(default_factory=list)
+
+
+@dataclass
+class PerformanceReport:
+    """A comprehensive analysis of learner performance."""
+    student_id: str
+    syllabus_id: str
+    report_date: str
+    overall_completion_rate: float
+    weak_topics: Dict[str, float]  # Topic ID to performance score (0-1)
+    strong_topics: Dict[str, float]
+    detailed_feedback: List[str]
 
 
 @dataclass
@@ -50,6 +74,19 @@ class ProgressTracker:
     def __init__(self, data_dir: str = "data/progress"):
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
+
+    def import_anki_reviews(self, syllabus_id: str, student_id: str, anki_reviews: List[AnkiPerformance]) -> None:
+        """Import Anki review data and associate with study sessions."""
+        progress = self._load_progress(syllabus_id, student_id)
+        # Simple association: associate with the most recent session for the deck
+        for review in anki_reviews:
+            for session in reversed(progress.sessions):
+                # This logic can be improved with more context
+                if review.deck_name in session.notes or syllabus_id in review.deck_name:
+                    session.anki_performance.append(review)
+                    break
+        progress.last_updated = datetime.now().isoformat()
+        self._save_progress(progress)
 
     def start_tracking(self, syllabus_id: str, student_id: str) -> LearningProgress:
         """Start tracking progress for a syllabus."""
@@ -80,16 +117,59 @@ class ProgressTracker:
             progress.total_study_time += session.duration_actual
 
         # Update averages
-        if session.difficulty_rating and session.understanding_level:
-            difficulty_ratings = [s.difficulty_rating for s in progress.sessions if s.difficulty_rating]
-            understanding_ratings = [s.understanding_level for s in progress.sessions if s.understanding_level]
-
-            if difficulty_ratings:
-                progress.average_difficulty = sum(difficulty_ratings) / len(difficulty_ratings)
-            if understanding_ratings:
-                progress.average_understanding = sum(understanding_ratings) / len(understanding_ratings)
+        self._update_averages(progress)
 
         self._save_progress(progress)
+
+    def generate_performance_report(self, syllabus_id: str, student_id: str) -> PerformanceReport:
+        """Generate a comprehensive performance report for adaptive learning."""
+        try:
+            progress = self._load_progress(syllabus_id, student_id)
+        except FileNotFoundError:
+            return PerformanceReport(
+                student_id=student_id,
+                syllabus_id=syllabus_id,
+                report_date=datetime.now().isoformat(),
+                overall_completion_rate=0.0,
+                weak_topics={},
+                strong_topics={},
+                detailed_feedback=["No progress data found."]
+            )
+
+        # Calculate completion rate
+        completion_rate = (progress.completed_sessions / progress.total_sessions * 100) if progress.total_sessions > 0 else 0
+
+        # Analyze Anki performance to find weak/strong topics
+        topic_performance = {}
+        for session in progress.sessions:
+            if not session.anki_performance:
+                continue
+
+            topic_id = session.objective_id  # Assuming objective_id maps to a topic
+            if topic_id not in topic_performance:
+                topic_performance[topic_id] = []
+
+            for card in session.anki_performance:
+                # Simple metric: high lapses = poor performance.
+                # Score: 1.0 = perfect, lower is worse.
+                score = 1.0 / (1 + card.lapses)
+                topic_performance[topic_id].append(score)
+
+        avg_topic_scores = {topic: sum(scores) / len(scores) for topic, scores in topic_performance.items()}
+        weak_topics = {topic: score for topic, score in avg_topic_scores.items() if score < 0.6}
+        strong_topics = {topic: score for topic, score in avg_topic_scores.items() if score >= 0.8}
+
+        feedback = self._generate_feedback(weak_topics, strong_topics)
+
+        return PerformanceReport(
+            student_id=student_id,
+            syllabus_id=syllabus_id,
+            report_date=datetime.now().isoformat(),
+            overall_completion_rate=round(completion_rate, 2),
+            weak_topics=weak_topics,
+            strong_topics=strong_topics,
+            detailed_feedback=feedback
+        )
 
     def get_progress_report(self, syllabus_id: str, student_id: str) -> Dict[str, Any]:
         """Generate a comprehensive progress report."""
@@ -181,12 +261,35 @@ class ProgressTracker:
     def log_challenge(self, syllabus_id: str, student_id: str, challenge: str) -> None:
         """Log a challenge or difficulty encountered."""
         progress = self._load_progress(syllabus_id, student_id)
-        progress.challenges.append({
-            "date": datetime.now().isoformat(),
-            "description": challenge
-        })
+        progress.challenges.append(
+            {
+                "date": datetime.now().isoformat(),
+                "description": challenge
+            }
+        )
         progress.last_updated = datetime.now().isoformat()
         self._save_progress(progress)
+
+    def _update_averages(self, progress: LearningProgress) -> None:
+        """Update average performance metrics."""
+        difficulty_ratings = [s.difficulty_rating for s in progress.sessions if s.difficulty_rating]
+        understanding_ratings = [s.understanding_level for s in progress.sessions if s.understanding_level]
+
+        if difficulty_ratings:
+            progress.average_difficulty = sum(difficulty_ratings) / len(difficulty_ratings)
+        if understanding_ratings:
+            progress.average_understanding = sum(understanding_ratings) / len(understanding_ratings)
+
+    def _generate_feedback(self, weak_topics: Dict[str, float], strong_topics: Dict[str, float]) -> List[str]:
+        """Generate textual feedback based on performance."""
+        feedback = []
+        if weak_topics:
+            feedback.append(f"Focus on improving these topics: {', '.join(weak_topics.keys())}.")
+        if strong_topics:
+            feedback.append(f"You're doing great in these areas: {', '.join(strong_topics.keys())}.")
+        if not weak_topics and not strong_topics:
+            feedback.append("Consistent effort is showing! Keep up the great work across all topics.")
+        return feedback
 
     def _calculate_study_streak(self, sessions: List[StudySession]) -> int:
         """Calculate current study streak in days."""
@@ -254,6 +357,16 @@ class ProgressTracker:
                     "resources_used": s.resources_used,
                     "difficulty_rating": s.difficulty_rating,
                     "understanding_level": s.understanding_level,
+                    "anki_performance": [
+                        {
+                            "card_id": p.card_id,
+                            "deck_name": p.deck_name,
+                            "lapses": p.lapses,
+                            "ease_factor": p.ease_factor,
+                            "review_date": p.review_date,
+                            "review_history": p.review_history,
+                        } for p in s.anki_performance
+                    ]
                 }
                 for s in progress.sessions
             ],
