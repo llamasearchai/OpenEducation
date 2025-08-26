@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenEducation — Embeddings + Qdrant + Anki</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="preconnect" href="https://cdn.openai.com" />
+  <link rel="stylesheet" href="https://cdn.openai.com/fonts/openai-sans.css" />
+</head>
+<body>
+  <main>
+    <h1>Upload to Generate Anki Deck</h1>
+    <form id="upload-form">
+      <input type="file" id="files" multiple accept=".pdf,.docx,.txt,.md" />
+      <input type="text" id="title" placeholder="Deck title (optional)" />
+      <label class="opt"><input type="checkbox" id="gptqa" checked /> Use GPT for Q/A</label>
+      <details>
+        <summary>Advanced chunking & storage</summary>
+        <div class="deckbar">
+          <label>Max tokens <input type="number" id="max_tokens" min="100" max="6000" placeholder="700" /></label>
+          <label>Overlap tokens <input type="number" id="overlap_tokens" min="0" max="2000" placeholder="100" /></label>
+          <span>or</span>
+          <label>Char size <input type="number" id="char_size" min="200" max="8000" placeholder="1200" /></label>
+          <label>Char overlap <input type="number" id="char_overlap" min="0" max="3000" placeholder="150" /></label>
+          <label>Collection <input type="text" id="collection" placeholder="documents" /></label>
+        </div>
+      </details>
+      <button type="submit">Process</button>
+    </form>
+    <div id="status"></div>
+    <div id="result" class="hidden">
+      <p><strong>Deck:</strong> <a id="deck-link" href="#" download>Download .apkg</a></p>
+      <p id="note-count"></p>
+      <p>Sources export: <a id="sources-json" href="#">JSON</a> · <a id="sources-csv" href="#">CSV</a></p>
+    </div>
+
+    <section id="search">
+      <h2>Semantic Search</h2>
+      <div class="deckbar">
+        <label>Deck:
+          <select id="deck-select"></select>
+        </label>
+      </div>
+      <div class="searchbar">
+        <input type="text" id="q" placeholder="Search your uploaded content…" />
+        <button id="search-btn">Search</button>
+      </div>
+      <ol id="results"></ol>
+    </section>
+
+    <section id="ask">
+      <h2>Ask (RAG Answering)</h2>
+      <div class="deckbar">
+        <label>Deck:
+          <select id="ask-deck-select"></select>
+        </label>
+        <label>k <input type="number" id="ask-k" min="1" max="20" value="5" /></label>
+        <label>Context tokens <input type="number" id="ask-maxctx" min="200" max="6000" value="1600" /></label>
+        <label class="opt"><input type="checkbox" id="sources-only" /> Sources only</label>
+      </div>
+      <div class="searchbar">
+        <input type="text" id="ask-q" placeholder="Ask a question about your uploads…" />
+        <button id="ask-btn">Ask</button>
+      </div>
+      <div id="answer" class="answer"></div>
+      <ol id="answer-sources"></ol>
+    </section>
+  </main>
+  <script src="/static/script.js"></script>
+  <noscript>Enable JavaScript to use this tool.</noscript>
+  <footer>
+    <small>Fonts: OpenAI Sans (fallbacks applied if unavailable).</small>
+  </footer>
+  </body>
+</html>

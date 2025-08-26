@@ -1,0 +1,50 @@
+:root {
+  color-scheme: light dark;
+}
+* { box-sizing: border-box; }
+html, body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: "OpenAI Sans", Inter, -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  padding: 0 16px;
+}
+main {
+  max-width: 840px;
+  margin: 40px auto;
+}
+h1 { font-weight: 650; letter-spacing: -0.01em; }
+form { display: flex; gap: 12px; margin: 16px 0 24px; }
+label.opt { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+details { margin: 8px 0; }
+details > summary { cursor: pointer; opacity: .9; }
+button {
+  background: #0b5fff;
+  color: white;
+  border: 0;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+button:hover { filter: brightness(0.95); }
+.hidden { display: none; }
+#status { margin: 8px 0 16px; font-size: 14px; opacity: .8; }
+footer { text-align: center; opacity: .7; margin: 24px 0; }
+
+#search { margin-top: 40px; }
+.searchbar { display: flex; gap: 8px; }
+#q { flex: 1 1 auto; padding: 8px 10px; border-radius: 8px; border: 1px solid #ccc; }
+#results { margin-top: 12px; }
+.deckbar { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+.deckbar label { display: inline-flex; align-items: center; gap: 6px; }
+
+#ask { margin-top: 32px; }
+#ask-q { flex: 1 1 auto; padding: 8px 10px; border-radius: 8px; border: 1px solid #ccc; }
+#answer { margin-top: 12px; white-space: pre-wrap; }
+.answer p { margin: 8px 0; }
+.answer strong { font-weight: 700; }
+.answer em { font-style: italic; }
+#answer-sources { margin-top: 8px; font-size: 14px; opacity: .9; }
