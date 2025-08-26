@@ -25,11 +25,13 @@ else
     echo "📝 Git repository already exists"
 fi
 
-# Configure git user (using Nik Jois as requested)
-echo "👤 Configuring git user..."
+# Configure git user with noreply to avoid email privacy issues
+echo "Configuring git user..."
 git config user.name "Nik Jois"
-git config user.email "nikjois@llamasearch.ai"
-echo "✅ Git user configured: Nik Jois <nikjois@llamasearch.ai>"
+git config user.email "nikjois@users.noreply.github.com"
+git config tag.gpgSign false
+git config --global user.useConfigOnly true
+echo "Git user configured: Nik Jois <nikjois@users.noreply.github.com>"
 
 # Add remote origin if not exists
 if ! git remote get-url origin > /dev/null 2>&1; then
@@ -82,24 +84,27 @@ git branch -M main
 git push -u origin main
 echo "✅ Code pushed to https://github.com/llamasearchai/OpenEducation.git"
 
-# Create and push v1.0.0 tag
-echo "🏷️  Creating version tag..."
-git tag -a v1.0.0 -m "Release v1.0.0: Complete OpenEducation Platform
-
-- Full educational services delivery system
-- ELD and World Languages modules
-- Standards-compliant instruction and assessment
-- Production-ready with comprehensive testing"
-git push origin v1.0.0
-echo "✅ Version v1.0.0 tagged and pushed"
+# Create and push tag using lightweight tag to avoid email in tag object
+echo "Creating version tag..."
+# If v1.0.0 exists, bump to v1.0.1
+if git rev-parse -q --verify refs/tags/v1.0.0 >/dev/null; then
+  git tag -d v1.0.0 || true
+  git push origin :refs/tags/v1.0.0 || true
+  TAG_VER=v1.0.1
+else
+  TAG_VER=v1.0.0
+fi
+git tag ${TAG_VER}
+git push origin ${TAG_VER}
+echo "Version ${TAG_VER} tagged and pushed"
 
 echo ""
 echo "🎉 SUCCESS! OpenEducation has been published to GitHub"
 echo "======================================================"
 echo ""
-echo "📋 Repository: https://github.com/llamasearchai/OpenEducation"
-echo "🏷️  Version: v1.0.0"
-echo "👤 Author: Nik Jois <nikjois@llamasearch.ai>"
+echo "Repository: https://github.com/llamasearchai/OpenEducation"
+echo "Version: ${TAG_VER}"
+echo "Author: Nik Jois <nikjois@users.noreply.github.com>"
 echo ""
 echo "📊 Repository Features:"
 echo "   ✅ Professional README with comprehensive documentation"
