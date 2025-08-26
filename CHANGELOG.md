@@ -34,3 +34,8 @@ All notable changes to this project will be documented here.
 
 ### Notes
 - This is a BETA release. APIs and UI may change.
+## [1.0.2] - 2025-08-26
+### Changed
+- Repo cleanup aligned with .gitignore; untracked large/generated assets.
+- Ruff auto-fixes and lint configuration (E501 relaxed, per-file ignores for demo CLI modules).
+- Confirmed tests pass (47) and CLI E2E runs with offline fallback.
