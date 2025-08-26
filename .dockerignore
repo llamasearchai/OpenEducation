@@ -1,0 +1,33 @@
+# Ignore Git and VCS
+.git
+.github
+
+# Python cache and virtual envs
+__pycache__/
+*.py[cod]
+*.pyo
+.mypy_cache/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Local data and artifacts
+data/
+*.apkg
+uploads/
+*.log
+
+# Editors/OS
+.DS_Store
+.idea/
+.vscode/
+
+# Env files
+.env
+.env.*
+
+# Tests and docs (not needed at runtime)
+tests/
+docs/
+
