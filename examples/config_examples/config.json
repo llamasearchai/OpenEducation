@@ -1,0 +1,38 @@
+{
+  "data_dir": "data",
+  "seed": 7,
+  "sources": [
+    {
+      "id": "src_sample",
+      "type": "markdown",
+      "path": "examples/sample_content/neuro.md",
+      "tags": [
+        "neuro"
+      ],
+      "license": null
+    }
+  ],
+  "deck": {
+    "id": "deck_main",
+    "name": "OpenEducation",
+    "description": "",
+    "parent_id": null,
+    "tags": []
+  },
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-4.1",
+    "temperature": 0.2
+  },
+  "rag": {
+    "embedder": "hash",
+    "embedding_model": "text-embedding-3-small",
+    "dims": 512,
+    "top_k": 5,
+    "use_faiss": false
+  },
+  "safety": {
+    "allow_medical_actions": false,
+    "language": "en"
+  }
+}

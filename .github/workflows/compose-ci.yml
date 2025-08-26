@@ -1,0 +1,31 @@
+name: Compose CI (health)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  compose:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build images
+        run: docker compose build
+      - name: Up services
+        env:
+          # No OpenAI key here; we only hit health/index
+          OPENAI_API_KEY: dummy
+        run: |
+          docker compose up -d
+          # Wait for app
+          for i in {1..30}; do if curl -fsS http://localhost:8000/api/health >/dev/null; then break; fi; sleep 2; done
+          curl -fsS http://localhost:8000/ >/dev/null
+      - name: Logs on failure
+        if: failure()
+        run: |
+          docker compose logs --no-color || true
+      - name: Down
+        if: always()
+        run: docker compose down -v
