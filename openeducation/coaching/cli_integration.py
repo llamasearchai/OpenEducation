@@ -11,6 +11,51 @@ app = typer.Typer(help="Practice Based Coaching and staff development")
 
 
 @app.command()
+def analyze_notes(
+    notes_file: str = typer.Argument(..., help="Path to a text file containing observation notes."),
+    data_dir: str = typer.Option("data/coaching", help="Data directory"),
+) -> None:
+    """Analyze unstructured observation notes using AI."""
+    try:
+        with open(notes_file, 'r', encoding='utf-8') as f:
+            notes = f.read()
+            
+        manager = PracticeBasedCoachingManager(data_dir)
+        analysis = manager.analyze_observation_notes(notes)
+        
+        if "error" in analysis:
+            print(f"❌ Error during analysis: {analysis['error']}")
+            if "raw_response" in analysis:
+                print(f"   Raw LLM Response: {analysis['raw_response']}")
+            raise typer.Exit(1)
+            
+        print("✅ Observation Notes Analyzed Successfully!")
+        print("="*60)
+        
+        print(f"\n📝 Summary:")
+        print(f"   {analysis.get('summary', 'No summary provided.')}")
+        
+        print("\n👍 Strengths:")
+        for strength in analysis.get('strengths', []):
+            print(f"   - {strength}")
+            
+        print("\n📈 Areas for Growth:")
+        for area in analysis.get('areas_for_growth', []):
+            print(f"   - {area}")
+            
+        print("\n🚀 Suggested Next Steps:")
+        for step in analysis.get('suggested_next_steps', []):
+            print(f"   - {step}")
+
+    except FileNotFoundError:
+        print(f"❌ Error: The file '{notes_file}' was not found.")
+        raise typer.Exit(1)
+    except Exception as e:
+        print(f"❌ An unexpected error occurred: {e}")
+        raise typer.Exit(1)
+
+
+@app.command()
 def create_cycle(
     teacher_id: str = typer.Option(..., help="Teacher identifier"),
     coach_id: str = typer.Option(..., help="Coach identifier"),

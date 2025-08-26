@@ -10,13 +10,14 @@ def make_cards_rulebased(block: ContentBlock, deck_id: str) -> List[Card]:
     terms = extract_terms(block)
     cards: List[Card] = []
     if bullets:
-        front = f"What is the key idea of: {block.title}?"
+        title = block.title or "this section"
+        front = f"What is the key idea of: {title}?"
         back = bullets[0]
         cards.append(
             Card.basic(
                 front,
                 back,
-                source_id=block.metadata.get("source_id", ""),
+                source_id=block.source_id,
                 deck_id=deck_id,
                 tags=["definition"],
             )
@@ -28,7 +29,7 @@ def make_cards_rulebased(block: ContentBlock, deck_id: str) -> List[Card]:
             Card.basic(
                 front,
                 back,
-                source_id=block.metadata.get("source_id", ""),
+                source_id=block.source_id,
                 deck_id=deck_id,
                 tags=["term"],
             )

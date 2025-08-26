@@ -1,0 +1,34 @@
+{
+  "sources": [
+    {
+      "id": "pediatric_cardiology",
+      "type": "pdf",
+      "path": "PediatricCardiology.pdf",
+      "tags": [
+        "medicine",
+        "cardiology",
+        "pediatrics"
+      ]
+    }
+  ],
+  "name": "Cardiology Cloze Deletion Pipeline",
+  "steps": [
+    {
+      "agent": "FlashcardAgent",
+      "prompt": "For each chapter provided, generate 10-20 high-quality cloze deletion flashcards. The deck name for each card should be based on the chapter's hierarchical title, using '::' as a separator. For example, a chapter titled 'Part I::Diagnostics::ECG' should have cards with the deck name 'Pediatric Cardiology::Part I::Diagnostics::ECG'. The cards must be styled with the 'OpenAI Sans' font.",
+      "inputs": {
+        "content_blocks": "data/runs/latest/content_blocks.json"
+      },
+      "outputs": {
+        "cards": "data/runs/latest/cards.json"
+      }
+    }
+  ],
+  "deck_properties": {
+    "name": "Pediatric Cardiology",
+    "styling": {
+      "font_family": "OpenAI Sans",
+      "css": "@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap'); .card { font-family: 'Open Sans', sans-serif; }"
+    }
+  }
+}

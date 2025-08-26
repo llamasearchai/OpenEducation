@@ -76,4 +76,10 @@ def generate_flashcards(chunks: List[str]) -> List[Dict[str, Any]]:
         if key and key not in seen:
             seen.add(key)
             notes.append(n)
+    # Fallback: ensure at least one basic note for short inputs
+    if not notes and chunks:
+        sample = chunks[0].strip()
+        if len(sample) > 10:
+            front = sample.split(". ")[0][:100]
+            notes.append({"type": "basic", "front": front, "back": sample})
     return notes

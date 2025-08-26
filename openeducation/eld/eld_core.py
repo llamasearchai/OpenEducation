@@ -540,7 +540,7 @@ class ELDManager:
         """Extract key academic vocabulary from objectives."""
         # This is a simplified implementation
         # In a real system, this would use NLP to extract academic vocabulary
-        academic_vocab = []
+        academic_vocab: List[str] = []
 
         # Common academic vocabulary patterns
         academic_words = [
@@ -551,11 +551,17 @@ class ELDManager:
         ]
 
         for objective in objectives:
+            low = objective.lower()
             for word in academic_words:
-                if word in objective.lower():
+                if word in low:
                     academic_vocab.append(word)
+            # Fallback: include content words (simple heuristic)
+            for token in [t.strip(".,;:!?") for t in objective.split()]:
+                if token.isalpha() and len(token) >= 6:
+                    academic_vocab.append(token.lower())
 
-        return list(set(academic_vocab))
+        # Dedupe and return
+        return sorted(set(academic_vocab))
 
     def _generate_strategies_for_plan(self, level: EnglishProficiencyLevel, domain: ELDDomain) -> List[str]:
         """Generate appropriate instructional strategies for the lesson plan."""

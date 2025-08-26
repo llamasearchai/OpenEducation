@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from ..utils.io import write_json, read_json
+from ..rag.embeddings import OpenAIEmbedding
 
 
 @dataclass
@@ -68,6 +69,26 @@ class ObservationToolsManager:
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.observation_criteria = self._load_default_criteria()
+        self.criteria_embeddings = self.vectorize_criteria()
+
+    def vectorize_criteria(self) -> Dict[str, List[float]]:
+        """Generate and store vector embeddings for all observation criteria."""
+        embedding_model = OpenAIEmbedding()
+        embeddings = {}
+        
+        all_criteria = [item for sublist in self.observation_criteria.values() for item in sublist]
+        
+        texts_to_embed = []
+        for criteria in all_criteria:
+            text = f"Category: {criteria.category}. Criteria: {criteria.name}. Description: {criteria.description}. Indicators: {', '.join(criteria.indicators)}"
+            texts_to_embed.append(text)
+            
+        vectors = embedding_model.embed(texts_to_embed)
+        
+        for criteria, vector in zip(all_criteria, vectors):
+            embeddings[criteria.id] = vector
+            
+        return embeddings
 
     def _load_default_criteria(self) -> Dict[str, List[ObservationCriteria]]:
         """Load research-based observation criteria."""

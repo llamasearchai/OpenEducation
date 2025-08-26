@@ -1,0 +1,17 @@
+/* Basic styles for the dashboard */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    background-color: #f4f4f9;
+}
+
+header {
+    background-color: #4a4a8a;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}
+
+main {
+    padding: 1rem;
+}

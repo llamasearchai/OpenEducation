@@ -1,7 +1,7 @@
 from __future__ import annotations
 import uuid
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query, Form
 from fastapi.responses import FileResponse, HTMLResponse
@@ -45,11 +45,11 @@ def health():
 async def upload(
     files: List[UploadFile] = File(...),
     title: str = Form(""),
-    max_tokens: int | None = Form(None),
-    overlap_tokens: int | None = Form(None),
-    char_size: int | None = Form(None),
-    char_overlap: int | None = Form(None),
-    collection: str | None = Form(None),
+    max_tokens: Optional[int] = Form(None),
+    overlap_tokens: Optional[int] = Form(None),
+    char_size: Optional[int] = Form(None),
+    char_overlap: Optional[int] = Form(None),
+    collection: Optional[str] = Form(None),
 ):
     if not files:
         raise HTTPException(status_code=400, detail="No files uploaded")
@@ -125,11 +125,10 @@ def get_deck(deck_id: str):
 
 
 @app.get("/api/search")
-def search(query: str, k: int = 5, deck_id: str | None = None, collection: str | None = None):
+def search(query: str, k: int = 5, deck_id: Optional[str] = None, collection: Optional[str] = None):
     if not query:
         raise HTTPException(status_code=400, detail="Missing query")
     qvec = embed_texts([query])[0]
-    from .qdrant_store import search_similar
     from .qdrant_store import search_similar
     qfilter = deck_filter(deck_id) if deck_id else None
     results = search_similar(qvec, limit=k, filter=qfilter, collection=(collection or None) or config.QDRANT_COLLECTION)
@@ -145,7 +144,7 @@ def search(query: str, k: int = 5, deck_id: str | None = None, collection: str |
 
 
 @app.get("/api/answer")
-def answer(query: str = Query(..., min_length=2), k: int = Query(None), max_ctx: int | None = None, deck_id: str | None = None, sources_only: bool = False, collection: str | None = None):
+def answer(query: str = Query(..., min_length=2), k: Optional[int] = Query(None), max_ctx: Optional[int] = None, deck_id: Optional[str] = None, sources_only: bool = False, collection: Optional[str] = None):
     if not query:
         raise HTTPException(status_code=400, detail="Missing query")
     topk = k or config.RAG_K
@@ -187,7 +186,7 @@ def get_config():
 
 
 @app.get("/api/decks/{deck_id}/sources")
-def deck_sources(deck_id: str, fmt: str = "json", collection: str | None = None):
+def deck_sources(deck_id: str, fmt: str = "json", collection: Optional[str] = None):
     from .qdrant_store import scroll_all_by_deck
     items = scroll_all_by_deck(deck_id, collection=(collection or None) or config.QDRANT_COLLECTION)
     rows = []

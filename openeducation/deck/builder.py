@@ -2,13 +2,19 @@ import os
 
 import genanki
 from typing import List
-from ..models.card import Card
+from ..models.card import Card, CardType
 from ..models.deck import Deck
 
 
 class DeckBuilder:
-    def __init__(self, deck: Deck):
+    def __init__(self, deck: Deck, custom_styling: dict = None):
         self.deck = deck
+        
+        # Default CSS
+        css = ".card { font-family: -apple-system, Helvetica, Arial; font-size: 18px; }"
+        if custom_styling and "css" in custom_styling:
+            css = custom_styling["css"]
+
         self._model = genanki.Model(
             deck.model_id,
             "OpenEducation Basic",
@@ -20,13 +26,39 @@ class DeckBuilder:
                     "afmt": '{{FrontSide}}<hr id="answer">{{Back}}',
                 }
             ],
-            css=".card { font-family: -apple-system, Helvetica, Arial; font-size: 18px; }",
+            css=css,
         )
+
+        self._cloze_model = genanki.Model(
+            deck.model_id + 1, # Ensure unique model ID
+            "OpenEducation Cloze",
+            fields=[{"name": "Text"}, {"name": "Back Extra"}, {"name": "Tags"}],
+            templates=[
+                {
+                    "name": "Cloze Card",
+                    "qfmt": "{{cloze:Text}}",
+                    "afmt": "{{cloze:Text}}<br><br>{{Back Extra}}",
+                }
+            ],
+            css=css,
+            model_type=genanki.Model.CLOZE,
+        )
+
         self._genanki_deck = genanki.Deck(deck.deck_id_int, deck.name, deck.description)
         self._media: List[str] = []
 
     def add_card(self, card: Card) -> None:
-        note = genanki.Note(model=self._model, fields=[card.front, card.back, " ".join(card.tags)])
+        if card.card_type == CardType.CLOZE:
+            note = genanki.Note(
+                model=self._cloze_model,
+                fields=[card.front, card.back, " ".join(card.tags)]
+            )
+        else: # Basic card
+            note = genanki.Note(
+                model=self._model,
+                fields=[card.front, card.back, " ".join(card.tags)]
+            )
+            
         self._genanki_deck.add_note(note)
         for m in card.media:
             if os.path.exists(m):

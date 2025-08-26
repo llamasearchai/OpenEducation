@@ -5,6 +5,11 @@ import hashlib
 import numpy as np
 from typing import List
 
+import openai
+from dotenv import load_dotenv
+
+load_dotenv()
+
 try:
     from openai import OpenAI
 except Exception:
@@ -34,7 +39,7 @@ class HashEmbedding(EmbeddingBackend):
 
 
 class OpenAIEmbedding(EmbeddingBackend):
-    def __init__(self, model: str = "text-embedding-3-small") -> None:
+    def __init__(self, model: str = "text-embedding-3-large") -> None:
         if OpenAI is None:
             raise RuntimeError("openai not installed")
         self.client, self.model = OpenAI(), model
@@ -43,3 +48,8 @@ class OpenAIEmbedding(EmbeddingBackend):
         out = self.client.embeddings.create(model=self.model, input=texts)
         arr = np.array([d.embedding for d in out.data], dtype=np.float32)
         return arr / (np.linalg.norm(arr, axis=1, keepdims=True) + 1e-9)
+
+    def get_dim(self) -> int:
+        # This is for text-embedding-3-large. 
+        # For other models, this value might need to be changed.
+        return 3072
