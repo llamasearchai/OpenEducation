@@ -6,6 +6,9 @@ on:
       - 'v*'
   release:
     types: [published]
+  workflow_run:
+    workflows: ["Docker Publish (GHCR)"]
+    types: [completed]
 
 permissions:
   contents: write
@@ -14,6 +17,8 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    if: |
+      github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     steps:
       - uses: actions/checkout@v4
 
@@ -36,6 +41,8 @@ jobs:
           REPO_LC=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
           if [ "${{ github.event_name }}" = "release" ]; then
             TAG="${{ github.event.release.tag_name }}"
+          elif [ "${{ github.event_name }}" = "workflow_run" ]; then
+            TAG="${{ github.event.workflow_run.head_branch }}"
           else
             TAG="${GITHUB_REF_NAME}"
           fi
@@ -48,12 +55,12 @@ jobs:
           set -euo pipefail
           IMAGE="${{ steps.prep.outputs.repo }}:${{ steps.prep.outputs.tag }}"
           echo "Waiting for ${IMAGE} to be available..."
-          for i in {1..30}; do
+          for i in {1..90}; do
             if docker buildx imagetools inspect "$IMAGE" >/dev/null 2>&1; then
               echo "Image available."
               break
             fi
-            echo "Not yet available, retry $i/30..."; sleep 10
+            echo "Not yet available, retry $i/90..."; sleep 10
           done
 
       - name: Pull single-arch image and save tar
