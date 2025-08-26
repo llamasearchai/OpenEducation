@@ -4,18 +4,90 @@ on:
   push:
     tags:
       - 'v*'
+  release:
+    types: [published]
 
 permissions:
   contents: write
+  packages: read
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Create GitHub Release (pre-release)
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare vars
+        id: prep
+        run: |
+          REPO_LC=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "repo=ghcr.io/${REPO_LC}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Wait for image availability
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="${{ steps.prep.outputs.repo }}:${{ steps.prep.outputs.tag }}"
+          echo "Waiting for ${IMAGE} to be available..."
+          for i in {1..30}; do
+            if docker buildx imagetools inspect "$IMAGE" >/dev/null 2>&1; then
+              echo "Image available."
+              break
+            fi
+            echo "Not yet available, retry $i/30..."; sleep 10
+          done
+
+      - name: Pull single-arch image and save tar
+        run: |
+          IMAGE="${{ steps.prep.outputs.repo }}:${{ steps.prep.outputs.tag }}"
+          TAR="openeducation-${{ steps.prep.outputs.tag }}-linux-amd64.tar"
+          docker pull --platform linux/amd64 "$IMAGE"
+          docker save "$IMAGE" -o "$TAR"
+          echo "tar=$TAR" >> $GITHUB_OUTPUT
+        id: save
+
+      - name: Generate image metadata files
+        id: meta
+        run: |
+          IMAGE="${{ steps.prep.outputs.repo }}:${{ steps.prep.outputs.tag }}"
+          OUTDIR=release_assets
+          mkdir -p "$OUTDIR"
+          docker buildx imagetools inspect "$IMAGE" --format '{{json .}}' > "$OUTDIR/image-inspect.json"
+          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE" | sed 's/.*@//')
+          echo "$DIGEST" > "$OUTDIR/image-digest.txt"
+          echo "Image: $IMAGE" > "$OUTDIR/README.txt"
+          echo "Digest: $DIGEST" >> "$OUTDIR/README.txt"
+          echo "Pull: docker pull $IMAGE" >> "$OUTDIR/README.txt"
+          ls -l "$OUTDIR"
+
+      - name: Create/Update GitHub Release with assets
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.prep.outputs.tag }}
           generate_release_notes: true
           body_path: .github/RELEASE_TEMPLATE.md
-          prerelease: true
+          prerelease: false
+          files: |
+            ${{ steps.save.outputs.tar }}
+            release_assets/image-inspect.json
+            release_assets/image-digest.txt
+            release_assets/README.txt
