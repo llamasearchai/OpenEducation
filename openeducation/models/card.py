@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional
 import uuid
+from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class CardType(Enum):

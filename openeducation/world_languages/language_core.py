@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import json
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
-from pathlib import Path
+from datetime import datetime
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from ..utils.io import write_json, read_json
+from ..utils.io import read_json, write_json
 
 
 class Language(Enum):
@@ -929,7 +928,7 @@ class WorldLanguagesManager:
         try:
             # Try to load existing progress
             progress = self._load_student_progress(progress_id)
-        except:
+        except Exception:
             # Create new progress record
             progress = StudentProgress(
                 id=progress_id,

@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import List, Dict, Any
+
 import re
+from typing import Any, Dict, List
 
 
 def find_candidates(text: str) -> List[str]:

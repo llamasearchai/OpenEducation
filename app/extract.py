@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Tuple
 from pathlib import Path
-from pypdf import PdfReader
-from docx import Document as DocxDocument
+from typing import Tuple
+
 import markdown
 from bs4 import BeautifulSoup
+from docx import Document as DocxDocument
+from pypdf import PdfReader
 
 
 def extract_text(path: str | Path) -> Tuple[str, str]:

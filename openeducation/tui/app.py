@@ -1,10 +1,13 @@
 import os
+
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, Tabs, Tab, ContentSwitcher
 from textual.containers import Container
+from textual.widgets import ContentSwitcher, Footer, Header, Tab, Tabs
+
 from .widgets.dashboard import Dashboard
-from .widgets.syllabus_viewer import SyllabusViewer
 from .widgets.performance_viewer import PerformanceViewer
+from .widgets.syllabus_viewer import SyllabusViewer
+
 
 class OpenEducationTUI(App):
     """A Textual user interface for the OpenEducation platform."""

@@ -1,23 +1,23 @@
 from __future__ import annotations
+
 import uuid
 from pathlib import Path
 from typing import List, Optional
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Query, Form
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import config
-from .extract import extract_text
-from .chunking import auto_chunk_text, chunk_with_overrides
-from .embeddings import embed_texts
-from .qdrant_store import upsert_vectors, ensure_collection, deck_filter
-from .flashcards import generate_flashcards
 from .anki_export import build_deck
-from .models import UploadResponse, HealthResponse, DeckListResponse, DeckMeta
-from .llm import generate_qa_from_chunks, answer_from_context
-from .catalog import add_deck, list_decks, get_deck
-
+from .catalog import add_deck, get_deck, list_decks
+from .chunking import chunk_with_overrides
+from .embeddings import embed_texts
+from .extract import extract_text
+from .flashcards import generate_flashcards
+from .llm import answer_from_context, generate_qa_from_chunks
+from .models import DeckListResponse, DeckMeta, HealthResponse, UploadResponse
+from .qdrant_store import deck_filter, ensure_collection, upsert_vectors
 
 app = FastAPI(title="OpenEducation Embeddings + Qdrant + Anki")
 
@@ -110,14 +110,14 @@ async def upload(
         for ch in chunks[:5]:
             if len(ch) > 40:
                 notes.append({"type": "basic", "front": ch[:100] + "…", "back": ch})
-    apkg_path = build_deck(deck_title, notes, file_id=deck_id)
+    build_deck(deck_title, notes, file_id=deck_id)
     # Save catalog entry
     add_deck(deck_id, deck_title, len(notes))
     return UploadResponse(job_id=job_id, deck_path=f"/api/decks/{deck_id}", deck_id=deck_id, notes=len(notes), title=deck_title)
 
 
 @app.get("/api/decks/{deck_id}")
-def get_deck(deck_id: str):
+def deck_file(deck_id: str):
     apkg_path = Path(config.DECKS_DIR) / f"{deck_id}.apkg"
     if not apkg_path.exists():
         raise HTTPException(status_code=404, detail="Deck not found")
@@ -194,7 +194,8 @@ def deck_sources(deck_id: str, fmt: str = "json", collection: Optional[str] = No
         payload = p.payload or {}
         rows.append({"id": str(p.id), "deck_id": payload.get("deck_id"), "text": payload.get("text", "")})
     if fmt == "csv":
-        import io, csv
+        import csv
+        import io
         buf = io.StringIO()
         writer = csv.DictWriter(buf, fieldnames=["id", "deck_id", "text"])
         writer.writeheader()

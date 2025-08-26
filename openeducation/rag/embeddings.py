@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import hashlib
-
-import numpy as np
 from typing import List
 
-import openai
+import numpy as np
 from dotenv import load_dotenv
 
 load_dotenv()

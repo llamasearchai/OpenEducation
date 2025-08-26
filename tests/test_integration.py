@@ -1,5 +1,7 @@
 import os
-from openeducation.cli import ingest, index, generate, export
+
+from openeducation.cli import export, generate, index, ingest
+
 
 def test_end_to_end(tmp_path):
     cfg = "examples/config_examples/config.json"

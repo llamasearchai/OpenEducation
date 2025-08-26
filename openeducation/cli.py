@@ -6,28 +6,28 @@ import os
 from typing import List
 
 import typer
+
+from .agents.flow import run_pipeline
+from .anki_connect.cli_integration import app as anki_app
+from .anki_connect.push import import_package
+from .assessment.cli_integration import app as assessment_app
+from .coaching.cli_integration import app as coaching_app
 from .config import AppConfig, SourceConfig
-from .utils.io import ensure_dir, write_json, read_json
+from .content.extractor import block_to_bullets, extract_terms
 from .content.sources import ContentSource
-from .content.extractor import extract_terms, block_to_bullets
+from .deck.builder import DeckBuilder
+from .eld.cli_integration import app as eld_app
+from .llm.rulebased import make_cards_rulebased
 from .models.card import Card
 from .models.content_block import ContentBlock
-from .llm.rulebased import make_cards_rulebased
-from .deck.builder import DeckBuilder
 from .models.deck import Deck
-from .rag.embeddings import HashEmbedding
-
-from .anki_connect.push import import_package
-from .agents.flow import run_pipeline
-from .qa.validate import validate_cards
-from .utils.report import manifest, licensing_report
-from .syllabus.cli_integration import app as syllabus_app
-from .scheduling.cli_integration import app as scheduling_app
-from .anki_connect.cli_integration import app as anki_app
 from .observations.cli_integration import app as observations_app
-from .coaching.cli_integration import app as coaching_app
-from .assessment.cli_integration import app as assessment_app
-from .eld.cli_integration import app as eld_app
+from .qa.validate import validate_cards
+from .rag.embeddings import HashEmbedding
+from .scheduling.cli_integration import app as scheduling_app
+from .syllabus.cli_integration import app as syllabus_app
+from .utils.io import ensure_dir, read_json, write_json
+from .utils.report import licensing_report, manifest
 from .world_languages.cli_integration import app as world_languages_app
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)

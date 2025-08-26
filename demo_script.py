@@ -21,11 +21,10 @@ Requirements:
 - Docker (optional, for containerized demo)
 """
 
-import os
 import json
-import time
+import os
 from pathlib import Path
-from typing import Dict, Any
+
 
 def print_header(title: str):
     """Print a formatted header."""

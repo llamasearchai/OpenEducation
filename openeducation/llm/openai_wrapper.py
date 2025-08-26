@@ -1,13 +1,16 @@
 from __future__ import annotations
-import os
-import json
-from typing import Any, Dict
-import time
+
 import hashlib
+import json
+import os
+import time
+from typing import Any, Dict
+
 from openai import OpenAI
 from ratelimit import limits, sleep_and_retry
 
 from ..utils.io import ensure_dir
+
 
 class OpenAIWrapper:
     def __init__(self, model: str = "gpt-4-turbo", temperature: float = 0.2) -> None:

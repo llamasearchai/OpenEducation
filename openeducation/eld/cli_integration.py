@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Optional
 
 import typer
-from .eld_core import ELDManager, EnglishProficiencyLevel, ELDDomain
+
+from .eld_core import ELDDomain, ELDManager, EnglishProficiencyLevel
 
 app = typer.Typer(help="English Language Development (ELD) instruction and support")
 
@@ -43,7 +44,7 @@ def create_profile(
             program_entry_date=program_entry_date
         )
 
-        print(f"✅ ELD profile created successfully!")
+        print("✅ ELD profile created successfully!")
         print(f"   Profile ID: {profile.id}")
         print(f"   Student: {profile.student_id}")
         print(f"   Current Level: {profile.current_level.value}")
@@ -93,7 +94,7 @@ def create_lesson_plan(
             created_by=created_by
         )
 
-        print(f"✅ ELD lesson plan created successfully!")
+        print("✅ ELD lesson plan created successfully!")
         print(f"   Plan ID: {lesson_plan.id}")
         print(f"   Title: {lesson_plan.title}")
         print(f"   Level: {lesson_plan.proficiency_level.value}")
@@ -159,7 +160,7 @@ def assess_progress(
             assessed_by=assessed_by
         )
 
-        print(f"✅ ELD progress assessment completed!")
+        print("✅ ELD progress assessment completed!")
         print(f"   Assessment ID: {record.id}")
         print(f"   Student: {record.student_id}")
         print(f"   Type: {record.assessment_type}")
@@ -203,7 +204,7 @@ def collaborate(
             resources_shared=resources_list
         )
 
-        print(f"✅ Teacher collaboration recorded successfully!")
+        print("✅ Teacher collaboration recorded successfully!")
         print(f"   Collaboration ID: {record.id}")
         print(f"   Teacher: {record.teacher_id}")
         print(f"   ELD Specialist: {record.eld_specialist_id}")
@@ -249,7 +250,7 @@ def generate_report(
         profile = report["profile"]
         progress = report["progress_summary"]
 
-        print(f"✅ ELD progress report generated successfully!")
+        print("✅ ELD progress report generated successfully!")
         print(f"   Student: {student_id}")
         print(f"   Report Period: {report_period}")
         print(f"   Current Level: {profile['current_level']}")
@@ -365,7 +366,7 @@ def list_strategies(
             print(f"\n🔸 {strategy.name}")
             print(f"   ID: {strategy_id}")
             print(f"   Description: {strategy.description}")
-            print(f"   Proficiency Levels: {[l.value for l in strategy.proficiency_levels]}")
+            print(f"   Proficiency Levels: {[level.value for level in strategy.proficiency_levels]}")
             print(f"   Domains: {[d.value for d in strategy.domains]}")
             print(f"   Evidence Base: {strategy.evidence_base}")
             print(f"   Implementation Steps: {len(strategy.implementation_steps)}")

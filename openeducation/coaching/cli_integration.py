@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Optional
 
 import typer
-from .practice_based_coaching import PracticeBasedCoachingManager, CoachingCycle
+
+from .practice_based_coaching import CoachingCycle, PracticeBasedCoachingManager
 
 app = typer.Typer(help="Practice Based Coaching and staff development")
 
@@ -32,7 +33,7 @@ def analyze_notes(
         print("✅ Observation Notes Analyzed Successfully!")
         print("="*60)
         
-        print(f"\n📝 Summary:")
+        print("\n📝 Summary:")
         print(f"   {analysis.get('summary', 'No summary provided.')}")
         
         print("\n👍 Strengths:")
@@ -67,8 +68,6 @@ def create_cycle(
 ) -> None:
     """Create a new Practice Based Coaching cycle."""
     try:
-        manager = PracticeBasedCoachingManager(data_dir)
-
         cycle = manager.create_coaching_cycle(
             teacher_id=teacher_id,
             coach_id=coach_id,
@@ -78,7 +77,7 @@ def create_cycle(
             duration_weeks=duration_weeks
         )
 
-        print(f"✅ Practice Based Coaching cycle created successfully!")
+        print("✅ Practice Based Coaching cycle created successfully!")
         print(f"   Cycle ID: {cycle.id}")
         print(f"   Teacher: {cycle.teacher_id}")
         print(f"   Coach: {cycle.coach_id}")
@@ -110,7 +109,6 @@ def log_session(
     """Log a coaching session."""
     try:
         manager = PracticeBasedCoachingManager(data_dir)
-
         # Parse comma-separated values
         agenda_list = [item.strip() for item in agenda_items.split(",")]
         discussion_list = [topic.strip() for topic in discussion_topics.split(",")]
@@ -130,7 +128,7 @@ def log_session(
             action_items=actions_list
         )
 
-        print(f"✅ Coaching session logged successfully!")
+        print("✅ Coaching session logged successfully!")
         print(f"   Session ID: {session.id}")
         print(f"   Cycle: {cycle_id}")
         print(f"   Type: {session.session_type}")
@@ -169,9 +167,9 @@ def update_progress(
             new_action_items=actions_list
         )
 
-        print(f"✅ Coaching cycle progress updated successfully!")
+        print("✅ Coaching cycle progress updated successfully!")
         print(f"   Cycle: {cycle_id}")
-        print(f"   Progress Notes: Added")
+        print("   Progress Notes: Added")
         print(f"   Challenges: {len(challenges_list)}")
         print(f"   New Action Items: {len(actions_list)}")
 
@@ -199,9 +197,9 @@ def complete_cycle(
             achieved_level=final_level
         )
 
-        print(f"✅ Coaching cycle completed successfully!")
+        print("✅ Coaching cycle completed successfully!")
         print(f"   Cycle: {cycle_id}")
-        print(f"   Status: Completed")
+        print("   Status: Completed")
 
         if final_level:
             print(f"   Achieved Level: {final_level}")
@@ -237,7 +235,7 @@ def generate_report(
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
 
-        print(f"✅ Coaching report generated successfully!")
+        print("✅ Coaching report generated successfully!")
         print(f"   Cycle: {cycle_id}")
         print(f"   Report saved to: {output_file}")
         print(f"   Generated at: {report['generated_at']}")

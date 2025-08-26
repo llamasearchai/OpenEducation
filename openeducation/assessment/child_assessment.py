@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import json
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from ..utils.io import write_json, read_json
+from ..utils.io import read_json, write_json
 
 
 @dataclass
@@ -328,9 +327,7 @@ class ChildAssessmentManager:
             if domain_assessments or domain_objectives:
                 summary = f"{domain.replace('_', ' ').title()}: "
 
-                if domain_assessments:
-                    avg_score = sum([sum(a.scores.values()) / len(a.scores) for a in domain_assessments]) / len(domain_assessments)
-                    summary += ".1f"
+                # If needed, compute average score in future for richer summaries
 
                 if domain_objectives:
                     achieved = len([o for o in domain_objectives if o.status == "achieved"])
@@ -389,8 +386,7 @@ class ChildAssessmentManager:
         summary += f"{achieved_objectives} objectives have been achieved. "
 
         if assessments:
-            recent_assessment = max(assessments, key=lambda x: x.assessment_date)
-            summary += f"Most recent assessment shows age-appropriate development in most areas."
+            summary += "Most recent assessment shows age-appropriate development in most areas."
 
         return summary
 

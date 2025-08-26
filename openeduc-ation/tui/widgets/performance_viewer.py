@@ -1,5 +1,6 @@
 from textual.widgets import Static
 
+
 class PerformanceViewer(Static):
     """A widget to display a performance report."""
 

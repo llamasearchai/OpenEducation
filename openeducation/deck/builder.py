@@ -1,7 +1,8 @@
 import os
+from typing import List
 
 import genanki
-from typing import List
+
 from ..models.card import Card, CardType
 from ..models.deck import Deck
 

@@ -1,11 +1,19 @@
-from typing import Iterable, List, Optional, Dict, Any
+import os
+import uuid
+from typing import Any, Dict, List, Optional
+
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue
+from qdrant_client.models import (
+    Distance,
+    FieldCondition,
+    Filter,
+    MatchValue,
+    PointStruct,
+    VectorParams,
+)
+
 from . import config
 from .embeddings import embedding_dimension
-import uuid
-import os
-
 
 DEFAULT_COLLECTION = config.QDRANT_COLLECTION
 

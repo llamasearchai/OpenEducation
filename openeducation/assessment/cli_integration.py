@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import typer
+
 from .child_assessment import ChildAssessmentManager, ChildProfile
 
 app = typer.Typer(help="Child assessment and progress tracking")
@@ -36,7 +37,7 @@ def create_profile(
             special_needs=special_needs_list
         )
 
-        print(f"✅ Child profile created successfully!")
+        print("✅ Child profile created successfully!")
         print(f"   Profile ID: {profile.id}")
         print(f"   Name: {profile.first_name} {profile.last_name}")
         print(f"   Age: {manager._calculate_age(profile.date_of_birth)} years")
@@ -92,7 +93,7 @@ def conduct_assessment(
             recommendations=recommendations_list
         )
 
-        print(f"✅ Assessment conducted successfully!")
+        print("✅ Assessment conducted successfully!")
         print(f"   Assessment ID: {assessment.id}")
         print(f"   Child: {assessment.child_id}")
         print(f"   Tool: {assessment.tool_id}")
@@ -135,7 +136,7 @@ def create_objective(
             strategies=strategies_list
         )
 
-        print(f"✅ Learning objective created successfully!")
+        print("✅ Learning objective created successfully!")
         print(f"   Objective ID: {learning_obj.id}")
         print(f"   Child: {learning_obj.child_id}")
         print(f"   Objective: {learning_obj.objective}")
@@ -168,9 +169,9 @@ def update_progress(
             new_level=final_level
         )
 
-        print(f"✅ Learning progress updated successfully!")
+        print("✅ Learning progress updated successfully!")
         print(f"   Objective: {objective_id}")
-        print(f"   Progress Note: Added")
+        print("   Progress Note: Added")
 
         if final_level:
             print(f"   New Level: {final_level}")
@@ -217,7 +218,7 @@ def generate_report(
                 "teacher_signature_date": report.teacher_signature_date
             }, f, indent=2, ensure_ascii=False)
 
-        print(f"✅ Progress report generated successfully!")
+        print("✅ Progress report generated successfully!")
         print(f"   Child: {report.child_id}")
         print(f"   Report Period: {report.report_period}")
         print(f"   Start Date: {report.start_date}")
@@ -369,7 +370,7 @@ def list_children(
             if child.special_needs:
                 print(f"   Special Needs: {len(child.special_needs)}")
             if child.ifsp_iep:
-                print(f"   IFSP/IEP: Yes")
+                print("   IFSP/IEP: Yes")
 
             print()
 

@@ -1,16 +1,17 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from ..utils.io import write_json, read_json
+import numpy as np
+
+from ..llm.openai_wrapper import OpenAIWrapper
 from ..observations.observation_tools import ObservationToolsManager
 from ..rag.embeddings import OpenAIEmbedding
-from ..llm.openai_wrapper import OpenAIWrapper
-import numpy as np
+from ..utils.io import read_json, write_json
 
 
 @dataclass

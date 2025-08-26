@@ -1,9 +1,12 @@
 from __future__ import annotations
+
 import os
+
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from .utils.io import read_json
+
 from .dashboard.routes import router as dashboard_router
+from .utils.io import read_json
 
 app = FastAPI(title="OpenEducation API")
 

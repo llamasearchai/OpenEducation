@@ -1,7 +1,9 @@
 import json
-from textual.widgets import DirectoryTree, Markdown, Static
-from textual.containers import Horizontal, Vertical
+
 from textual.app import ComposeResult
+from textual.containers import Horizontal, Vertical
+from textual.widgets import DirectoryTree, Markdown, Static
+
 
 class PerformanceViewer(Static):
     """A widget to display a performance report."""

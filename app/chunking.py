@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import List
-from . import config
-import re
 import hashlib
+import re
+from typing import List
+
+from . import config
 
 try:
     import tiktoken

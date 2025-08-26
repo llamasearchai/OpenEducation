@@ -1,6 +1,4 @@
 import io
-import os
-import types
 
 import pytest
 
@@ -92,6 +90,7 @@ def app_client(monkeypatch):
 
     # Build FastAPI test client
     from fastapi.testclient import TestClient
+
     from app.main import app
     return TestClient(app)
 

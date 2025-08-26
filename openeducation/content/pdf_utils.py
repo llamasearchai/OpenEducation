@@ -1,5 +1,5 @@
 import logging
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 from pypdf import PdfReader
 from pypdf.generic import Destination

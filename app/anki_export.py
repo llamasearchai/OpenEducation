@@ -1,10 +1,12 @@
 from __future__ import annotations
-from typing import List, Dict, Any
-import genanki
+
 import os
 import uuid
-from .config import DECKS_DIR
+from typing import Any, Dict, List
 
+import genanki
+
+from .config import DECKS_DIR
 
 CLOZE_MODEL = genanki.Model(
     1607392319,

@@ -1,7 +1,8 @@
+import os
+
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-import os
 
 router = APIRouter()
 templates = Jinja2Templates(directory="openeducation/dashboard/templates")

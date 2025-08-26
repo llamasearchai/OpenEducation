@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
 
 import typer
+
 from .advanced import AnkiConnectClient, AnkiDeckManager, AnkiSyncManager
 
 app = typer.Typer(help="Advanced Anki integration and management")
@@ -80,7 +80,7 @@ def create_educational_deck(
         print(f"✅ Educational deck '{deck_name}' created successfully!")
         print(f"   Cards Added: {result['notes_created']}")
         print(f"   Note IDs: {len(result['note_ids'])}")
-        print(f"   Model: OpenEducation Basic")
+        print("   Model: OpenEducation Basic")
 
         # Show sample cards
         print("\n📝 Sample Cards:")
@@ -235,7 +235,7 @@ def export_educational_deck(
 
         export_path = manager.export_educational_deck(deck_name, output_path, include_progress)
 
-        print(f"✅ Educational deck exported successfully!")
+        print("✅ Educational deck exported successfully!")
         print(f"   Deck: {deck_name}")
         print(f"   Package: {export_path}")
         print(f"   Progress Included: {include_progress}")
@@ -274,7 +274,7 @@ def sync_syllabus_progress(
 
         result = sync_manager.sync_syllabus_progress(syllabus_id, student_id)
 
-        print(f"✅ Progress synchronization completed!")
+        print("✅ Progress synchronization completed!")
         print(f"   Syllabus: {syllabus_id}")
         print(f"   Student: {student_id}")
         print(f"   Anki Decks: {len(deck_list)}")
@@ -360,14 +360,7 @@ def list_decks(
         print("=" * 50)
 
         for deck in deck_names:
-            try:
-                stats = client.get_deck_stats(deck)
-                total_cards = stats.get('total', 0)
-                new_cards = stats.get('new', 0)
-                review_cards = stats.get('review', 0)
-                print("20")
-            except Exception:
-                print("20")
+            print(f"- {deck}")
 
     except Exception as e:
         print(f"❌ Error listing decks: {e}")
@@ -389,7 +382,7 @@ def generate_master_deck(
         with open(syllabus_file, 'r', encoding='utf-8') as f:
             syllabus_data = json.load(f)
 
-        print(f"🎯 Generating Master Flashcard Program")
+        print("🎯 Generating Master Flashcard Program")
         print(f"   Subject: {syllabus_data.get('subject', 'Unknown')}")
         print(f"   Grade Level: {syllabus_data.get('grade_level', 'Unknown')}")
         print(f"   Units: {len(syllabus_data.get('units', []))}")

@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Optional
 
 import typer
-from .observation_tools import ObservationToolsManager, ClassroomObservation
+
+from .observation_tools import ClassroomObservation, ObservationToolsManager
 
 app = typer.Typer(help="Classroom observation and data collection tools")
 
@@ -21,8 +22,6 @@ def create_observation(
 ) -> None:
     """Create a new classroom observation."""
     try:
-        manager = ObservationToolsManager(data_dir)
-
         observation = manager.create_observation(
             classroom_id=classroom_id,
             teacher_id=teacher_id,
@@ -31,7 +30,7 @@ def create_observation(
             duration_minutes=duration_minutes
         )
 
-        print(f"✅ Classroom observation created successfully!")
+        print("✅ Classroom observation created successfully!")
         print(f"   Observation ID: {observation.id}")
         print(f"   Classroom: {observation.classroom_id}")
         print(f"   Teacher: {observation.teacher_id}")
@@ -55,8 +54,6 @@ def record_criteria_score(
 ) -> None:
     """Record a score for observation criteria."""
     try:
-        manager = ObservationToolsManager(data_dir)
-
         # Parse score based on criteria type
         try:
             # Try numeric score first
@@ -65,6 +62,7 @@ def record_criteria_score(
             # Use string score for non-numeric values
             score_value = score
 
+        manager = ObservationToolsManager(data_dir)
         manager.record_criteria_score(
             observation_id=observation_id,
             criteria_id=criteria_id,
@@ -72,7 +70,7 @@ def record_criteria_score(
             notes=notes
         )
 
-        print(f"✅ Criteria score recorded successfully!")
+        print("✅ Criteria score recorded successfully!")
         print(f"   Observation: {observation_id}")
         print(f"   Criteria: {criteria_id}")
         print(f"   Score: {score_value}")
@@ -93,7 +91,6 @@ def complete_observation(
 ) -> None:
     """Complete an observation with summary data."""
     try:
-        manager = ObservationToolsManager(data_dir)
 
         strengths_list = [s.strip() for s in strengths.split(",")]
         growth_list = [g.strip() for g in areas_for_growth.split(",")]
@@ -107,7 +104,7 @@ def complete_observation(
             follow_up_date=follow_up_date
         )
 
-        print(f"✅ Observation completed successfully!")
+        print("✅ Observation completed successfully!")
         print(f"   Observation: {observation_id}")
         print(f"   Strengths: {len(strengths_list)}")
         print(f"   Areas for Growth: {len(growth_list)}")
@@ -129,7 +126,6 @@ def generate_report(
 ) -> None:
     """Generate a comprehensive observation report."""
     try:
-        manager = ObservationToolsManager(data_dir)
 
         report = manager.generate_observation_report(observation_id)
 
@@ -145,7 +141,7 @@ def generate_report(
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
 
-        print(f"✅ Observation report generated successfully!")
+        print("✅ Observation report generated successfully!")
         print(f"   Observation: {observation_id}")
         print(f"   Report saved to: {output_file}")
         print(f"   Generated at: {report['generated_at']}")

@@ -1,5 +1,6 @@
 from textual.widgets import Static
 
+
 class Dashboard(Static):
     """A dashboard widget to display summary information."""
 

@@ -9,9 +9,8 @@ Requires the server to be running and OPENAI_API_KEY configured.
 """
 
 import argparse
-import json
 import sys
-import time
+
 import httpx
 
 
@@ -41,12 +40,12 @@ def main():
     assert deck_id, "No deck_id returned"
 
     print("[3] Search…", flush=True)
-    r = httpx.get(url(f"/api/search"), params={"query": "What is OpenAI?", "k": 3, "deck_id": deck_id}, timeout=60)
+    r = httpx.get(url("/api/search"), params={"query": "What is OpenAI?", "k": 3, "deck_id": deck_id}, timeout=60)
     r.raise_for_status()
     print("    results:", len(r.json().get("results", [])))
 
     print("[4] Answer…", flush=True)
-    r = httpx.get(url(f"/api/answer"), params={"query": "What is Python?", "k": 3, "deck_id": deck_id}, timeout=120)
+    r = httpx.get(url("/api/answer"), params={"query": "What is Python?", "k": 3, "deck_id": deck_id}, timeout=120)
     r.raise_for_status()
     ans = r.json()
     print("    answer:", (ans.get("answer") or "").strip()[:160])

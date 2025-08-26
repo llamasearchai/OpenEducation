@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List
 
 from pypdf import PdfReader
+
 from ..models.content_block import ContentBlock
 from .pdf_utils import extract_chapters_from_pdf
 

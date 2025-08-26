@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import Optional
 
 import typer
-from .progress_tracker import ProgressTracker, StudySession, LearningProgress, AnkiPerformance
+
+from .progress_tracker import AnkiPerformance, ProgressTracker, StudySession
 
 app = typer.Typer(help="Learning progress tracking and study management")
 

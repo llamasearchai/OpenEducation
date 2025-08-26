@@ -1,8 +1,9 @@
-import os
 import json
-from textual.widgets import DirectoryTree, Markdown, Static
-from textual.containers import Horizontal, Vertical
+
 from textual.app import ComposeResult
+from textual.containers import Horizontal, Vertical
+from textual.widgets import DirectoryTree, Markdown, Static
+
 
 class SyllabusViewer(Static):
     """A widget to view syllabi."""

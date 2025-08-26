@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from ..utils.io import write_json, read_json
+from ..utils.io import read_json, write_json
 
 
 @dataclass

@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import json
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
-from pathlib import Path
+from datetime import datetime, timedelta
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from ..utils.io import write_json, read_json
+from ..utils.io import read_json, write_json
 
 
 class EnglishProficiencyLevel(Enum):
@@ -492,6 +491,7 @@ class ELDManager:
             "Use realia and hands-on materials",
             "Implement cooperative learning structures"
         ]
+        strategies.extend(base_strategies)
 
         if proficiency_level in [EnglishProficiencyLevel.ENTERING, EnglishProficiencyLevel.EMERGING]:
             strategies.extend([
@@ -609,6 +609,7 @@ class ELDManager:
             "Language proficiency checklist",
             "Portfolio of student work"
         ]
+        methods.extend(base_methods)
 
         if level in [EnglishProficiencyLevel.ENTERING, EnglishProficiencyLevel.EMERGING]:
             methods.extend([

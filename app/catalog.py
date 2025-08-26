@@ -1,8 +1,10 @@
 from __future__ import annotations
-from typing import List, Dict, Any
-from pathlib import Path
+
 import json
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List
+
 from .config import DATA_DIR
 
 CATALOG_PATH = Path(DATA_DIR) / "catalog.json"

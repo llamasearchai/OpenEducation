@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 import re
-from typing import List, Dict
+from typing import Dict, List
+
 from ..models.card import Card
 
 

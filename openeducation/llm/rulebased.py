@@ -1,8 +1,10 @@
 from __future__ import annotations
+
 from typing import List
-from ..models.content_block import ContentBlock
+
+from ..content.extractor import block_to_bullets, extract_terms
 from ..models.card import Card
-from ..content.extractor import extract_terms, block_to_bullets
+from ..models.content_block import ContentBlock
 
 
 def make_cards_rulebased(block: ContentBlock, deck_id: str) -> List[Card]:

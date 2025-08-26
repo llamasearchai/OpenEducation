@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Optional
 
 import typer
-from .generator import SyllabusGenerator, Syllabus
+
+from .generator import Syllabus, SyllabusGenerator
 
 app = typer.Typer(help="Syllabus generation and management tools")
 

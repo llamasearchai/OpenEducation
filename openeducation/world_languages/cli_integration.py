@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Optional
 
 import typer
-from .language_core import WorldLanguagesManager, Language, ProficiencyLevel, ACTFLMode
+
+from .language_core import Language, ProficiencyLevel, WorldLanguagesManager
 
 app = typer.Typer(help="World Languages instruction and cultural integration")
 
@@ -133,7 +134,7 @@ def create_lesson_plan(
             technology_tools=tech_list
         )
 
-        print(f"✅ Lesson plan created successfully!")
+        print("✅ Lesson plan created successfully!")
         print(f"   Plan ID: {lesson_plan.id}")
         print(f"   Title: {lesson_plan.title}")
         print(f"   Grade Level: {lesson_plan.grade_level}")
@@ -190,7 +191,7 @@ def create_cultural_activity(
             duration_hours=duration_hours
         )
 
-        print(f"✅ Cultural activity created successfully!")
+        print("✅ Cultural activity created successfully!")
         print(f"   Activity ID: {activity.id}")
         print(f"   Language: {activity.language.value}")
         print(f"   Title: {activity.title}")
@@ -257,7 +258,7 @@ def assess_student(
             recommendations=recommendations_list
         )
 
-        print(f"✅ Language assessment completed successfully!")
+        print("✅ Language assessment completed successfully!")
         print(f"   Assessment ID: {assessment.id}")
         print(f"   Student: {assessment.student_id}")
         print(f"   Language: {assessment.language.value}")

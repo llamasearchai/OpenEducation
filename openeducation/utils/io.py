@@ -1,7 +1,8 @@
 from __future__ import annotations
-from pathlib import Path
-from typing import Union, Any
+
 import json
+from pathlib import Path
+from typing import Any, Union
 
 
 def ensure_dir(p: Union[str, Path]) -> Path:

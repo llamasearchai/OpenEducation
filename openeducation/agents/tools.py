@@ -1,18 +1,15 @@
 from __future__ import annotations
 
-import os
 import json
-from typing import Any, Dict, List
+import os
 
-from ..config import AppConfig
-from ..utils.io import ensure_dir, write_json, read_json
-from ..content.sources import ContentSource
-from ..models.content_block import ContentBlock
-from ..models.card import Card, CardType
-from ..models.deck import Deck
-from ..deck.builder import DeckBuilder
 from ..anki_connect.push import import_package
+from ..deck.builder import DeckBuilder
 from ..llm.openai_wrapper import OpenAIWrapper
+from ..models.card import Card
+from ..models.content_block import ContentBlock
+from ..models.deck import Deck
+from ..utils.io import read_json, write_json
 
 # --- Agent Tools ---
 
@@ -102,14 +99,9 @@ def assemble_deck(cards_path: str, deck_name: str, styling: dict = None) -> str:
     if not packages:
         raise ValueError("No decks were generated.")
     
-    summary_path = os.path.join(os.path.dirname(cards_path), f"{deck_name.replace(' ', '_')}_master.apkg")
     if len(packages) > 1:
-        # A bit of a hack for the pipeline: create a master package with all decks
-        master_deck = genanki.Deck(20513, deck_name)
-        master_pkg = genanki.Package(master_deck)
-        for pkg_path in packages:
-             master_pkg.add_deck(genanki.Deck.from_apkg(pkg_path)) # This is conceptual; genanki doesn't directly support merging packages this way. We will return the main package path.
-        return packages[0] # Returning the first subdeck path for now.
+        # Multiple subdecks created; return the first package path for now.
+        return packages[0]
     
     return packages[0] if packages else ""
 

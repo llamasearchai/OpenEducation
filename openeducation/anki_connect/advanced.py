@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import json
-import time
-import requests
-from typing import Dict, List, Optional, Any, Tuple
-from pathlib import Path
 import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from ..models.card import Card
-from ..utils.io import read_json
+import requests
+
 from ..llm.openai_wrapper import OpenAIWrapper
 from ..rag.embeddings import OpenAIEmbedding
 
@@ -51,7 +49,7 @@ class AnkiConnectClient:
         try:
             self._request("version")
             return True
-        except:
+        except Exception:
             return False
 
     def get_version(self) -> str:
@@ -286,7 +284,7 @@ class AnkiDeckManager:
         if deck_name not in self.client.get_deck_names():
             raise ValueError(f"Deck '{deck_name}' not found")
 
-        stats = self.client.get_deck_stats(deck_name)
+        # Optionally fetch stats here in the future
         difficulty_dist = self._analyze_deck_difficulty(deck_name)
 
         # Generate recommendations
@@ -541,7 +539,7 @@ Return a JSON array of concept objects with 'term', 'definition', and 'difficult
 
         # Generate embeddings for content chunks
         content_chunks = self._chunk_content(content)
-        embeddings = self.embedding_model.embed(content_chunks)
+        _ = self.embedding_model.embed(content_chunks)
 
         # Create flashcards with difficulty assessment
         flashcards = []
@@ -629,7 +627,7 @@ Return only a number from 1-5."""
         try:
             rating = self.llm.complete(system_prompt, user_prompt).strip()
             return min(5, max(1, int(rating)))
-        except:
+        except Exception:
             return 3  # Default medium difficulty
 
 
